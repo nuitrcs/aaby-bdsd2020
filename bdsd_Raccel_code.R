@@ -51,8 +51,7 @@ library(accelerometry)
 # set working directory #
 #########################
 
-#NOTE: what to do about this in cloud computing environment?
-setwd("R:/PrevMed/Projects/RelativeIntensity/Presentations/Biomed Data Science 2020")
+setwd("workshop_files")
 
 
 #############
