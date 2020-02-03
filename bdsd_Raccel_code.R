@@ -3,7 +3,7 @@
 # Biomedical Data Science Day 2020
 # Using R to Process and Analyze Accelerometer Data
 # Author: David Aaby
-# Updated: January 27 2020
+# Updated: February 3 2020
 ###################################################
 
 
@@ -59,7 +59,6 @@ setwd("workshop_files")
 #############
 
 # this file contains 100 subjects from the NHANES 2003-2004 Physical Activity Monitor  #
-#NOTE: how to do this in cloud computing environment?
 df = read.csv("data/NHANES_accel_100.csv", header=T)
 
 
@@ -82,8 +81,6 @@ ids = unique(df$seqn)
 
 
 # create one file per ID #
-# how to write data to file in cloud computing environment?
-
 for(i in 1:length(ids)) {
   print(c(i,ids[i]))
   oneperid = df[which(df$seqn == ids[i]),]
@@ -92,9 +89,9 @@ for(i in 1:length(ids)) {
 
 
 
-#########################################################################
-# example 1: process and analyze accelerometer data for one participant #
-#########################################################################
+##############################################################################################
+# Example 1: Process and analyze accelerometer data for one participant - default parameters #
+##############################################################################################
 
 # read in data #
 unidata = read.csv("data/one_per_id/ID_21005.csv", header=T)
@@ -116,56 +113,61 @@ abline(v=days$paxn, col="black", lty=2, lwd=2)
 
 
 
-# process accelerometer data for one participant - default parameters #
-summary.daily.i = process_uni(counts=unidata$paxinten, start_day = unidata$paxday[1])
+# Using the process_uni() function, process the cpm data for ID 21005
+# Keep all other parameters set to the default values
+
+
+# INSERT CODE HERE #
+
+
+
+
+#############################################################################################
+# Example 2: Process and analyze accelerometer data for one participant - custom parameters #
+#############################################################################################
+
+
+# Modify the example code below, changing some of the default parameters to output
+  # additional indicators for activity intensities, bouts, sedentary and peak activity
+  # output per-day summaries
+
+
+summary.daily.i = process_uni(counts=unidata$paxinten,
+                               steps = NULL,  
+                               nci_methods = FALSE,  
+                               start_day = unidata$paxday[1],
+                               start_date = NULL,  
+                               id = unidata$seqn[1],
+                               brevity = 1,   
+                               valid_days = 1,     
+                               valid_wk_days = 0, 
+                               valid_we_days = 0, 
+                               int_cuts = c(100,760,2020,5999),    
+                               cpm_nci = FALSE ,  
+                               days_distinct = FALSE, 
+                               nonwear_window = 60,  
+                               nonwear_tol = 0,  
+                               nonwear_tol_upper = 99,
+                               nonwear_nci = FALSE, 
+                               weartime_minimum = 600,   
+                               weartime_maximum = 1440,  
+                               active_bout_length = 10, 
+                               active_bout_tol = 0,   
+                               mvpa_bout_tol_lower = 0,
+                               vig_bout_tol_lower = 0, 
+                               active_bout_nci = FALSE,  
+                               sed_bout_tol = 0, 
+                               sed_bout_tol_maximum = 759,  
+                               artifact_thresh = 25000,    
+                               artifact_action = 1,        
+                               weekday_weekend = FALSE,  
+                               return_form = "averages")  
+
+
 summary.daily.i
 
 
 
-
-
-# process accelerometer data for one participant - slightly custom parameters #
-
-# Most of the parameters are set to the default values
-# What did we modify?
-  # brevity = 2 (we want to output more results)
-  # artifact_action = 3 (replace artifacts with average of neighboring count values)
-  # return_form = "daily"  # get per-day summary for each day of wear
-
-
-summary.daily.i <- process_uni(counts=unidata$paxinten,
-                                     steps = NULL,   # default, we are not using steps
-                                     nci_methods = FALSE,  # default
-                                     start_day = unidata$paxday[1],
-                                     start_date = NULL,  # NHANES data example does not have dates
-                                     id = unidata$seqn[1],
-                                     brevity = 2,   #default is 1, we want more info
-                                     valid_days = 1,     # we will remove subjects with < 4 valid days after we run the function
-                                     valid_wk_days = 0, # default
-                                     valid_we_days = 0, # defaul
-                                     int_cuts = c(100,760,2020,5999),    # default values for sedentary, light, lifestyle, moderate, vigorous 
-                                     cpm_nci = FALSE ,  # default
-                                     days_distinct = FALSE, # default
-                                     nonwear_window = 60,   # default
-                                     nonwear_tol = 0,  # default is 0
-                                     nonwear_tol_upper = 99,
-                                     nonwear_nci = FALSE, # default
-                                     weartime_minimum = 600,   # default
-                                     weartime_maximum = 1440,  # default
-                                     active_bout_length = 10,  # default
-                                     active_bout_tol = 0,   # default is 0
-                                     mvpa_bout_tol_lower = 0, # default
-                                     vig_bout_tol_lower = 0, # default
-                                     active_bout_nci = FALSE, # default
-                                     sed_bout_tol = 0, # default
-                                     sed_bout_tol_maximum = 759,  # int.cuts[2] - 1
-                                     artifact_thresh = 25000,    # default
-                                     artifact_action = 3,        # default is 1 (exlude days with one or more artifacts)
-                                     weekday_weekend = FALSE,  # default
-                                     return_form = "daily")  # get per-day summary for each day of wear
-
-
-summary.daily.i
 
 # what does the output give us?
   # id:	Participant ID number.
@@ -213,6 +215,9 @@ summary.daily.i
   # guideline_min:	Minutes towards physical activity guidelines (150 min/wk of MVPA or 75 min/wk of VPA).
 
 
+
+ 
+
 # If we are interested in looking at sedentary time and MVPA, we could subset our results to make it
 # easier to read
 summary.daily.i = data.frame(summary.daily.i)
@@ -222,9 +227,9 @@ summary.daily.i[which(summary.daily.i$valid_day==1),
 
 
 
-########################################################################################################
-# example 2: read in accelerometer data for many participants and combine summary into single data set #
-########################################################################################################
+###############################################################################
+# Example 3: Process and analyze accelerometer data for multiple participants #
+###############################################################################
 
 accel.filenames = list.files("data/one_per_id")   # creates vector of all files in folder
 accel.filenames = paste("data/one_per_id/", accel.filenames, sep="")  # paste filepath onto filename so we can read in each file
@@ -253,12 +258,9 @@ for(i in 1:length(accel.filenames)) {
                                  #start.time = strtime,
                                  id = unidata$seqn[1],
                                  brevity = 2,   #default is 1, we want more info
-                                 #hourly_var = "cpm",
-                                 #hourly_wearmin = 0,
                                  valid_days = 1,     # we will remove subjects with < 4 valid days after we run the function
                                  valid_wk_days = 0, # default
                                  valid_we_days = 0, # default
-                                 
                                  int_cuts = c(100,760,2020,5999),    # default values
                                  cpm_nci = FALSE ,  # default
                                  days_distinct = FALSE, # default
@@ -291,27 +293,28 @@ for(i in 1:length(accel.filenames)) {
 
 # check results for one ID #
 summary.daily[which(summary.daily$id==21005),]
+nrow(summary.daily)
 
 
 
-
-###############################################################
-# Example 3: how to summarize results across all participants #
-###############################################################
+##################################################################
+# Example 3 continued: Summarize results across all participants #
+##################################################################
 
 # Let's compare minutes of MVPA in males and females #
 
 
 # merge in demographics data #
 demo = read.csv(file="data/NHANES_demo_subset.csv", header = TRUE)
-
 summary.daily = merge(summary.daily, demo, by = "id", all.x=TRUE)
 
-# keep only those IDs with 4 or more valid days #
-valid.days = aggregate(valid_day ~ id, data = summary.daily, FUN = sum)
-four.valid.days = valid.days$id[which(valid.days$valid_day >= 4)]
 
-sum.daily.4vd = summary.daily[summary.daily$id %in% four.valid.days,] 
+# We want to keep only those participants with 4 or more valid days 
+# how many participants have at least 4 valid days?
+
+# INSERT CODE HERE #
+
+
 
 
 # keep only the valid days #
@@ -335,9 +338,9 @@ mean(mvpa.sum$mvpa_min[which(mvpa.sum$male==0)])
 
 
 
-#########################################################################
-# example 4: use individualized intensity cutpoints and re-run analysis #
-#########################################################################
+#################################################################
+# Example 4: Use custom intensity cutpoints and re-run analysis #
+#################################################################
 
 # create new data frame that includes filepaths and cutpoints #
 filenames.ex4 = data.frame(id = demo$id,
@@ -367,8 +370,6 @@ for(i in 1:nrow(filenames.ex4)) {
                                  #start.time = strtime,
                                  id = unidata$seqn[1],
                                  brevity = 2,   #default is 1, we want more info
-                                 #hourly_var = "cpm",
-                                 #hourly_wearmin = 0,
                                  valid_days = 1,     # we will remove subjects with < 4 valid days after we run the function
                                  valid_wk_days = 0, # default
                                  valid_we_days = 0, # default
@@ -409,10 +410,8 @@ summary.daily.ex4[which(summary.daily.ex4$id==21006),]
 summary.daily = merge(summary.daily.ex4, demo, by = "id", all.x=TRUE)
 
 # keep only those IDs with 4 or more valid days #
-valid.days = aggregate(valid_day ~ id, data = summary.daily, FUN = sum)
-four.valid.days = valid.days$id[which(valid.days$valid_day >= 4)]
+# INSERT CODE FROM EXAMPLE 3 HERE #
 
-sum.daily.4vd = summary.daily[summary.daily$id %in% four.valid.days,] 
 
 
 # keep only the valid days #
@@ -432,9 +431,21 @@ mean(mvpa.sum$mvpa_min[which(mvpa.sum$male==0)])
 
 
 
+#############
+# Example 5 #  
+#############
+
+# Suppose an investigator defines a valid day of accelerometer wear to be at least 8 hours of wear time.
+# Modify the code in Example 3 and see how the total sum and average daily minutes for males and females change
+
+
+
+
+
+
 # END OF TUTORIAL #
 
-#################################################################################################
-#################################################################################################
+################################################################################################################
+################################################################################################################
 
 
